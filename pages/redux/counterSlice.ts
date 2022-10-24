@@ -1,13 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 
 interface CounterState {
   value: number;
 }
 
+interface ResponseValue {
+  sumValue: number;
+}
+
 const initialState: CounterState = {
   value: 0,
 };
+
+export const addAsync = createAsyncThunk("counter/addAsync", async () => {
+  const res = await fetch("/api/sum");
+  const { sumValue }: ResponseValue = await res.json();
+  return sumValue;
+});
 
 export const counterSlice = createSlice({
   name: "counter",
@@ -22,6 +32,11 @@ export const counterSlice = createSlice({
     incrementByAmount: (state, action: PayloadAction<number>) => {
       state.value += action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(addAsync.fulfilled, (state, action) => {
+      state.value += action.payload;
+    });
   },
 });
 
